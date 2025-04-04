@@ -7,6 +7,8 @@ const app = express();
 const port = 3000;
 const host = '127.0.0.1';
 
+let pool;
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,8 +17,8 @@ app.get('/', (req, res) => {
   res.status(200).send('Server is running');
 });
 
-app.post('/', async (req, res) => {
-  const { database, user, password, query } = req.body;
+app.post('/connect', async (req, res) => {
+  const { database, user, password } = req.body;
 
   const dbConfig = {
     host: '127.0.0.1',
@@ -28,13 +30,23 @@ app.post('/', async (req, res) => {
     WireCrypt: true,
   };
 
-  firebird.attach(dbConfig, (err, db) => {
+  pool = firebird.pool(5, dbConfig);
+  res
+    .status(200)
+    .json({ message: 'Connection to the database is successfully' });
+});
+
+app.post('/', async (req, res) => {
+  const { query } = req.body;
+
+  if (!pool) {
+    return;
+  }
+  pool.get((err, db) => {
     if (err) {
       console.error('Error connection to the database:', err);
       return;
     }
-
-    console.log('Connection to the database is successfully');
 
     db.query(query, (err, result) => {
       if (err) {

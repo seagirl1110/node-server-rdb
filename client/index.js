@@ -1,38 +1,56 @@
-const BASE_URL = 'http://127.0.0.1:3000';
+async function main() {
+  const BASE_URL = 'http://127.0.0.1:3000';
 
-const form = document.querySelector('.form');
-const inputDatabase = document.querySelector('.input--database');
-const inputUser = document.querySelector('.input--user');
-const inputPassword = document.querySelector('.input--password');
-const inputQuery = document.querySelector('.input--query');
+  async function connectToDB() {
+    const dataDB = {
+      database: 'D:\\RedDatabase\\TEST.FDB',
+      user: 'SYSDBA',
+      password: 'masterkey',
+    };
 
-form.addEventListener('submit', handleFormSubmit);
+    try {
+      const response = await fetch(`${BASE_URL}/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataDB),
+      });
 
-async function handleFormSubmit(evt) {
-  evt.preventDefault();
-
-  const data = {
-    database: inputDatabase.value,
-    user: inputUser.value,
-    password: inputPassword.value,
-    query: inputQuery.value,
-  };
-
-  const result = await getData(data);
-  console.log(result);
-}
-
-async function getData(data) {
-  try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.log(error);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
   }
+
+  await connectToDB();
+
+  const list = document.querySelector('.list');
+
+  async function getData(data) {
+    try {
+      const response = await fetch(BASE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function renderData() {
+    const result = await getData({ query: 'SELECT * FROM COUNTRIES' });
+    result.forEach((item) => {
+      const el = document.createElement('div');
+      el.innerText = item.NAME;
+      list.appendChild(el);
+    });
+  }
+
+  renderData();
 }
+
+main();
