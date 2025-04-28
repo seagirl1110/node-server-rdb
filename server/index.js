@@ -13,10 +13,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.status(200).send('Server is running');
-});
-
 app.post('/connect', async (req, res) => {
   const { database, user, password } = req.body;
 
@@ -36,26 +32,146 @@ app.post('/connect', async (req, res) => {
     .json({ message: 'Connection to the database is successfully' });
 });
 
-app.post('/', async (req, res) => {
-  const { query } = req.body;
-
+app.post('/get', async (req, res) => {
   if (!pool) {
+    res.status(500).json({ error: 'No connection to the database' });
     return;
   }
+
+  const { query, params } = req.body;
+
+  if (query.split(' ')[0].toUpperCase() !== 'SELECT') {
+    res.status(403).json({ error: 'Invalid query' });
+    return;
+  }
+
   pool.get((err, db) => {
     if (err) {
       console.error('Error connection to the database:', err);
+      res
+        .status(500)
+        .json({ error: `Error connection to the database: ${err.message}` });
       return;
     }
 
-    db.query(query, (err, result) => {
+    db.query(query, params, (err, result) => {
       if (err) {
         console.error('Error execute query:', err);
+        res.status(500).json({ error: `Error execute query: ${err.message}` });
         db.detach();
         return;
       }
 
       res.status(200).json(result);
+      db.detach();
+    });
+  });
+});
+
+app.post('/create', async (req, res) => {
+  if (!pool) {
+    res.status(500).json({ error: 'No connection to the database' });
+    return;
+  }
+
+  const { query, params } = req.body;
+
+  if (query.split(' ')[0].toUpperCase() !== 'INSERT') {
+    res.status(403).json({ error: 'Invalid query' });
+    return;
+  }
+
+  pool.get((err, db) => {
+    if (err) {
+      console.error('Error connection to the database:', err);
+      res
+        .status(500)
+        .json({ error: `Error connection to the database: ${err.message}` });
+      return;
+    }
+
+    db.query(query, params, (err) => {
+      if (err) {
+        console.error('Error execute query:', err);
+        res.status(500).json({ error: `Error execute query: ${err.message}` });
+        db.detach();
+        return;
+      }
+
+      res.status(200).json({ message: 'Item created successfully' });
+      db.detach();
+    });
+  });
+});
+
+app.delete('/delete', async (req, res) => {
+  if (!pool) {
+    res.status(500).json({ error: 'No connection to the database' });
+    return;
+  }
+
+  const { query, params } = req.body;
+
+  if (query.split(' ')[0].toUpperCase() !== 'DELETE') {
+    res.status(403).json({ error: 'Invalid query' });
+    return;
+  }
+
+  pool.get((err, db) => {
+    if (err) {
+      console.error('Error connection to the database:', err);
+      res
+        .status(500)
+        .json({ error: `Error connection to the database: ${err.message}` });
+      return;
+    }
+
+    db.query(query, params, (err) => {
+      if (err) {
+        console.error('Error execute query:', err);
+        res.status(500).json({ error: `Error execute query: ${err.message}` });
+        db.detach();
+        return;
+      }
+
+      res.status(200).json({ message: 'Item deleted successfully' });
+
+      db.detach();
+    });
+  });
+});
+
+app.put('/update', async (req, res) => {
+  if (!pool) {
+    res.status(500).json({ error: 'No connection to the database' });
+    return;
+  }
+
+  const { query, params } = req.body;
+
+  if (query.split(' ')[0].toUpperCase() !== 'UPDATE') {
+    res.status(403).json({ error: 'Invalid query' });
+    return;
+  }
+
+  pool.get((err, db) => {
+    if (err) {
+      console.error('Error connection to the database:', err);
+      res
+        .status(500)
+        .json({ error: `Error connection to the database: ${err.message}` });
+      return;
+    }
+
+    db.query(query, params, (err) => {
+      if (err) {
+        console.error('Error execute query:', err);
+        res.status(500).json({ error: `Error execute query: ${err.message}` });
+        db.detach();
+        return;
+      }
+
+      res.status(200).json({ message: 'Item updated successfully' });
       db.detach();
     });
   });
