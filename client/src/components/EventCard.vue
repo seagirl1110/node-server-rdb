@@ -3,7 +3,7 @@ import AppButton from '@/components/AppButton.vue'
 
 const props = defineProps(['event'])
 
-const emit = defineEmits(['removeEvent', 'editEvent'])
+const emit = defineEmits(['removeEvent', 'editEvent', 'moreEvent'])
 
 const handleRemove = () => {
   emit('removeEvent', props.event.ID)
@@ -11,6 +11,10 @@ const handleRemove = () => {
 
 const handleEdit = () => {
   emit('editEvent', props.event)
+}
+
+const handleMore = () => {
+  emit('moreEvent', props.event.ID)
 }
 </script>
 
@@ -41,6 +45,7 @@ const handleEdit = () => {
     <div class="card__actions">
       <AppButton type="button" name="Удалить" :handleClick="handleRemove" />
       <AppButton type="button" name="Редактировать" :handleClick="handleEdit" />
+      <AppButton type="button" name="Подробнее" :handleClick="handleMore" />
     </div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import router from '@/router'
 import useEvents from '@/composables/useEvents'
 import EventCard from '@/components/EventCard.vue'
 import EventForm from '@/components/EventForm.vue'
@@ -60,6 +61,10 @@ const handleUpdateEvent = async (event) => {
     await init()
   }
 }
+
+const handleMoreEvent = async (ID) => {
+  router.push({ path: `/${ID}` })
+}
 </script>
 
 <template>
@@ -75,6 +80,7 @@ const handleUpdateEvent = async (event) => {
         :event="event"
         @remove-event="handleRemoveEvent"
         @edit-event="handleEditEvent"
+        @more-event="handleMoreEvent"
       />
     </div>
     <AppModal v-if="openModal" :handleClick="handleCloseModal">
